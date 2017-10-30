@@ -3,6 +3,7 @@ package com.force.click.cfaadmobsample;
 import android.app.Activity;
 import android.util.Log;
 
+import com.clickforce.ad.Listener.AdViewLinstener;
 import com.google.ads.AdSize;
 import com.google.ads.mediation.MediationAdRequest;
 import com.google.ads.mediation.customevent.CustomEventBanner;
@@ -34,11 +35,21 @@ public class DMCustomAD  implements CustomEventBanner {
 
 
         ad = new com.clickforce.ad.AdView(activity);
-        int weg = (int) ((activity.getResources().getDisplayMetrics().widthPixels) * 0.6);
-        int hig = (int) (weg * 0.15625);
-
-        ad.getAd(Integer.parseInt(serverParameter),  weg, hig,320,50);
+        ad.getAd(Integer.parseInt(serverParameter),320,50);
         listener.onReceivedAd(ad);
+
+        ad.setOnAdViewLoaded(new AdViewLinstener() {
+            @Override
+            public void OnAdViewLoadFail() {
+
+            }
+
+            @Override
+            public void OnAdViewLoadSuccess() {
+
+                ad.show();
+            }
+        });
 
     }
 }
