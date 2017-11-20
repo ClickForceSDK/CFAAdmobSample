@@ -35,7 +35,7 @@ public class DMCustomAD  implements CustomEventBanner {
 
 
         ad = new com.clickforce.ad.AdView(activity);
-        ad.getAd(Integer.parseInt(serverParameter),320,50);
+        ad.getAd(Integer.parseInt(serverParameter),320,50,0.8);
         listener.onReceivedAd(ad);
 
         ad.setOnAdViewLoaded(new AdViewLinstener() {
