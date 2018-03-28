@@ -5,7 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.clickforce.ad.Listener.AdViewLinstener;
+import com.clickforce.ad.Listener.AdViewListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdRequest;
@@ -18,7 +18,7 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListene
 
 
 
-public class DMCustomAD  implements CustomEventBanner {
+public class AdMobBannerCustomAD implements CustomEventBanner {
     private com.clickforce.ad.AdView ad;
 
 
@@ -56,30 +56,28 @@ public class DMCustomAD  implements CustomEventBanner {
                                 MediationAdRequest mediationAdRequest,
                                 Bundle customEventExtras) {
 
-        Log.d("Parameter", serverParameter);
+//        Log.d("Parameter", serverParameter);
 
         ad = new com.clickforce.ad.AdView(context);
-        ad.getAd(Integer.parseInt(serverParameter),320,50,0.8);
+        ad.getAd(Integer.parseInt(serverParameter), com.clickforce.ad.AdSize.MA320X50);
 
         listener.onAdLoaded(ad);
+        ad.setOnAdViewLoaded(new AdViewListener() {
+            @Override
+            public void OnAdViewLoadSuccess() {
+                ad.show();
+            }
 
-        ad.setOnAdViewLoaded(new AdViewLinstener() {
             @Override
             public void OnAdViewLoadFail() {
 
             }
 
             @Override
-            public void OnAdViewLoadSuccess() {
+            public void OnAdViewClickToAd() {
 
-                ad.show();
             }
         });
-
-
-
-
-
 
     }
 
