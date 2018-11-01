@@ -20,7 +20,7 @@ import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListene
 
 public class AdMobBannerCustomAD implements CustomEventBanner {
     private com.clickforce.ad.AdView ad;
-
+    private CustomEventBannerListener listenertoCF;
 
 
     /** The event is being destroyed. Perform any necessary cleanup here. */
@@ -50,7 +50,7 @@ public class AdMobBannerCustomAD implements CustomEventBanner {
 
     @Override
     public void requestBannerAd(Context context,
-                                CustomEventBannerListener listener,
+                                final CustomEventBannerListener listener,
                                 String serverParameter,
                                 AdSize size,
                                 MediationAdRequest mediationAdRequest,
@@ -61,21 +61,24 @@ public class AdMobBannerCustomAD implements CustomEventBanner {
         ad = new com.clickforce.ad.AdView(context);
         ad.getAd(Integer.parseInt(serverParameter), com.clickforce.ad.AdSize.MA320X50);
 
-        listener.onAdLoaded(ad);
+//        listener.onAdLoaded(ad);
+        listenertoCF = listener;
         ad.setOnAdViewLoaded(new AdViewListener() {
             @Override
             public void OnAdViewLoadSuccess() {
                 ad.show();
+                listenertoCF.onAdLoaded(ad);
             }
 
             @Override
             public void OnAdViewLoadFail() {
-
+                listenertoCF.onAdFailedToLoad(2);
             }
 
             @Override
             public void OnAdViewClickToAd() {
-
+                listenertoCF.onAdClicked();
+                listenertoCF.onAdClosed();
             }
         });
 
