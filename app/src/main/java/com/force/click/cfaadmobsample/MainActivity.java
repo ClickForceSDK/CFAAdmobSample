@@ -19,5 +19,6 @@ public class MainActivity extends AppCompatActivity {
         mAdView.loadAd(adRequest);
 
 
+
     }
 }
