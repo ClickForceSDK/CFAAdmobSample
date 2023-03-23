@@ -1,88 +1,85 @@
 package com.force.click.cfaadmobsample;
 
-import android.app.Activity;
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import com.clickforce.ad.Listener.AdViewListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.mediation.MediationAdRequest;
-import com.google.android.gms.ads.mediation.customevent.CustomEventBanner;
-import com.google.android.gms.ads.mediation.customevent.CustomEventBannerListener;
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationConfiguration;
 
-/**
- * Created by YaoChang on 2017/7/20.
- */
+import androidx.annotation.NonNull;
 
+public class AdMobBannerCustomAD implements MediationBannerAd, AdViewListener {
 
+    public static final String TAG = "ClickForce";
 
-public class AdMobBannerCustomAD implements CustomEventBanner {
+    public static final String SAMPLE_SDK_DOMAIN = "com.google.ads.mediation.sample.sdk";
+
     private com.clickforce.ad.AdView ad;
-    private CustomEventBannerListener listenertoCF;
 
+    /** Configuration for requesting the banner ad from the third-party network. */
+    private final MediationBannerAdConfiguration mediationBannerAdConfiguration;
 
-    /** The event is being destroyed. Perform any necessary cleanup here. */
-    @Override
-    public void onDestroy() {
+    /** Callback that fires on loading success or failure. */
+    private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
+            mediationAdLoadCallback;
 
+    /** Callback for banner ad events. */
+    private MediationBannerAdCallback bannerAdCallback;
+
+    public AdMobBannerCustomAD(
+            @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
+            @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback
+    ) {
+        this.mediationBannerAdConfiguration = mediationBannerAdConfiguration;
+        this.mediationAdLoadCallback = mediationAdLoadCallback;
     }
 
-    /**
-     * The app is being paused. This call is only forwarded to the adapter if the developer
-     * notifies AdMob Mediation that the app is being paused.
-     */
-    @Override
-    public void onPause() {
-        // The sample ad network doesn't have an onPause method, so it does nothing.
-    }
+    public void loadAd() {
+        Log.i("BannerCustomEvent", "Begin loading banner ad.");
+        String serverParameter =
+                mediationBannerAdConfiguration.getServerParameters().getString(
+                        MediationConfiguration.CUSTOM_EVENT_SERVER_PARAMETER_FIELD);
 
-    /**
-     * The app is being resumed. This call is only forwarded to the
-     * adapter if the developer notifies AdMob Mediation that the app is
-     * being resumed.
-     */
-    @Override
-    public void onResume() {
-        // The sample ad network doesn't have an onResume method, so it does nothing.
-    }
-
-    @Override
-    public void requestBannerAd(Context context,
-                                final CustomEventBannerListener listener,
-                                String serverParameter,
-                                AdSize size,
-                                MediationAdRequest mediationAdRequest,
-                                Bundle customEventExtras) {
-
-//        Log.d("Parameter", serverParameter);
-
+        Log.d("BannerCustomEvent", "Received server parameter : " + serverParameter);
+        Context context = mediationBannerAdConfiguration.getContext();
         ad = new com.clickforce.ad.AdView(context);
-        ad.getAd(Integer.parseInt(serverParameter), com.clickforce.ad.AdSize.MA320X50);
-
-//        listener.onAdLoaded(ad);
-        listenertoCF = listener;
-        ad.setOnAdViewLoaded(new AdViewListener() {
-            @Override
-            public void OnAdViewLoadSuccess() {
-                ad.show();
-                listenertoCF.onAdLoaded(ad);
-            }
-
-            @Override
-            public void OnAdViewLoadFail() {
-                listenertoCF.onAdFailedToLoad(2);
-            }
-
-            @Override
-            public void OnAdViewClickToAd() {
-                listenertoCF.onAdClicked();
-                listenertoCF.onAdClosed();
-            }
-        });
-
+        ad.getAd(Integer.parseInt(serverParameter), com.clickforce.ad.AdSize.MA320X50); //todo 請修改對應的合作尺寸
+        ad.setOnAdViewLoaded(this);
     }
 
+    @Override
+    public void OnAdViewLoadSuccess() {
+        ad.show();
+        bannerAdCallback = mediationAdLoadCallback.onSuccess(this);
+        bannerAdCallback.reportAdImpression();
+    }
 
+    @Override
+    public void OnAdViewLoadFail() {
+        mediationAdLoadCallback.onFailure(createSdkError(2));
+    }
+
+    @Override
+    public void OnAdViewClickToAd() {
+        Log.d(TAG, "The banner ad was clicked.");
+        bannerAdCallback.onAdOpened();
+        bannerAdCallback.onAdLeftApplication();
+        bannerAdCallback.reportAdClicked();
+    }
+
+    @NonNull
+    @Override
+    public View getView() {
+        return ad;
+    }
+
+    public static AdError createSdkError(int errorCode) {
+        return new AdError(errorCode, "No find ad.", SAMPLE_SDK_DOMAIN);
+    }
 }
